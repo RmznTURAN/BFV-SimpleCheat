@@ -47,8 +47,7 @@ void __fastcall CustomOcclusionQueryManager::hook()
 .srdata:0000000141DEF5EC  56            push    rsi
 .srdata:0000000141DEF5ED  57            push    rdi
 //------------------------------------------------------------------
-*/
-
+*/	
 	BYTE* jmpBackTrampoline = (BYTE*)VirtualAlloc( NULL, 0x100, (MEM_COMMIT | MEM_RESERVE), PAGE_EXECUTE_READWRITE );
 	//copy to be overwritten bytes to the trampoline
 	memcpy( (void*)jmpBackTrampoline, (void*)hookAddress, 14 );
@@ -114,6 +113,8 @@ void __fastcall CustomOcclusionQueryManager::EngineUpdate()
 		}
 		g_InitBatchQuery = true;
 	}
+	
+	CustomOcclusionQueryManager::GetInstance()->Enter();
 	
 	static bool bQueryActive = false;
 	if ( bQueryActive == false )
@@ -254,6 +255,7 @@ TRY_END;
 		}
 		bQueryActive = false;
 	};
+	CustomOcclusionQueryManager::GetInstance()->Leave();
 }
 
 bool CustomOcclusionQueryManager::OcclusionQuery::IsVisible( )
@@ -262,14 +264,20 @@ bool CustomOcclusionQueryManager::OcclusionQuery::IsVisible( )
 }
 void CustomOcclusionQueryManager::OcclusionQuery::UpdateQuery( fb::WorldOcclusionQueryRenderModule::ObjectRenderInfo* info )
 {
+	CustomOcclusionQueryManager::GetInstance()->Enter();
+	
 	memcpy( &this->m_info, info, sizeof(fb::WorldOcclusionQueryRenderModule::ObjectRenderInfo) );
 	
 	if ( this->m_Initialized != true )
 		 this->m_Initialized = true;
+	
+	CustomOcclusionQueryManager::GetInstance()->Leave();
 };
 
 void CustomOcclusionQueryManager::OcclusionQuery::UpdateQuery( fb::LinearTransform_AABB* transformAABB )
 {
+	CustomOcclusionQueryManager::GetInstance()->Enter();
+	
 	fb::Vec4 NewMin = transformAABB->m_Box.min ;//* g_soldierOcclusionBoxScale;
 	fb::Vec4 NewMax = transformAABB->m_Box.max ;//* g_soldierOcclusionBoxScale;
 	
@@ -285,12 +293,18 @@ void CustomOcclusionQueryManager::OcclusionQuery::UpdateQuery( fb::LinearTransfo
 	
 	if ( this->m_Initialized != true )
 		 this->m_Initialized = true;
+	
+	CustomOcclusionQueryManager::GetInstance()->Leave();
 };
 
 
 void __fastcall CustomOcclusionQueryManager::UpdateLocalTransform(fb::Vec4* LocalTransform)
 {
+	this->Enter();
+	
 	this->LocalTransform = *LocalTransform;
+	
+	this->Leave();
 }
 
 bool CustomOcclusionQueryManager::IsInQuery( void* entity )
@@ -335,7 +349,7 @@ CustomOcclusionQueryManager::OcclusionQuery* CustomOcclusionQueryManager::AddQue
 	}
 
 	pQuery->m_occluded = true;
-
+	this->Enter();
 	for (int i = 0; i < ARRAYSIZE(this->m_querys); i++)
 	{
 		if ( this->m_querys[i] == NULL )
@@ -344,6 +358,7 @@ CustomOcclusionQueryManager::OcclusionQuery* CustomOcclusionQueryManager::AddQue
 			break;
 		}
 	}
+	this->Leave();
 	//hook the entity destructor:
 	DWORD64* vtable = *(DWORD64**)entity;
 	
@@ -361,7 +376,7 @@ bool CustomOcclusionQueryManager::RemoveQuery( void* entity )
 {
 	CustomOcclusionQueryManager::OcclusionQuery* pQuery = this->GetQuery( entity );
 	if (!ValidPointer(pQuery)) return false;
-
+	this->Enter();
 	for (int i = 0; i < ARRAYSIZE(this->m_querys); i++)
 	{
 		CustomOcclusionQueryManager::OcclusionQuery* pOcclusionQuery = this->m_querys[i];
@@ -373,5 +388,18 @@ bool CustomOcclusionQueryManager::RemoveQuery( void* entity )
 			return true;
 		}
 	}
+	this->Leave();
 	return false;
+}
+void CustomOcclusionQueryManager::InitCriticalSection()
+{
+	InitializeCriticalSection(&this->m_CriticalSection);
+}
+void CustomOcclusionQueryManager::Enter()
+{
+	EnterCriticalSection(&this->m_CriticalSection);
+}
+void CustomOcclusionQueryManager::Leave()
+{
+	LeaveCriticalSection(&this->m_CriticalSection);
 }
