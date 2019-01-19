@@ -39,6 +39,7 @@ public:
 		{
 			 g_CustomOcclusionQueryManager = (CustomOcclusionQueryManager*)malloc( sizeof(CustomOcclusionQueryManager) );
 			 ZeroMemory( g_CustomOcclusionQueryManager, sizeof(CustomOcclusionQueryManager) );
+			g_CustomOcclusionQueryManager->InitCriticalSection();
 			 g_CustomOcclusionQueryManager->hook();
 		}
 		return g_CustomOcclusionQueryManager;
