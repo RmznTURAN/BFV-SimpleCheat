@@ -20,6 +20,7 @@ private:
 	fb::Vec4 LocalTransform;
 	float m_ObjectScreenAreaCoverage[32*8];
 	fb::WorldOcclusionQueryRenderModule::BatchQuery m_Batches[8];
+	CRITICAL_SECTION m_CriticalSection;
 public:
 	void __fastcall CustomOcclusionQueryManager::UpdateLocalTransform(fb::Vec4*);
 	void __fastcall CustomOcclusionQueryManager::EngineUpdate();
