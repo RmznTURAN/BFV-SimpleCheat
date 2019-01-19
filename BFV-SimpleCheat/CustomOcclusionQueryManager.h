@@ -24,6 +24,9 @@ public:
 	void __fastcall CustomOcclusionQueryManager::UpdateLocalTransform(fb::Vec4*);
 	void __fastcall CustomOcclusionQueryManager::EngineUpdate();
 	void __fastcall CustomOcclusionQueryManager::hook();
+	void CustomOcclusionQueryManager::InitCriticalSection();
+	void CustomOcclusionQueryManager::Enter();
+	void CustomOcclusionQueryManager::Leave();
 	bool CustomOcclusionQueryManager::IsInQuery( void* entity );
 	CustomOcclusionQueryManager::OcclusionQuery* CustomOcclusionQueryManager::GetQuery( void* entity );
 	CustomOcclusionQueryManager::OcclusionQuery* CustomOcclusionQueryManager::AddQuery( void* entity, fb::WorldOcclusionQueryRenderModule::ObjectRenderInfo* info );
