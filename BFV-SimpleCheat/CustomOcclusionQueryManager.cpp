@@ -11,7 +11,7 @@ t_fb__WorldOcclusionQueryRenderModule__insertBatchQuery 		fb__WorldOcclusionQuer
 
 unsigned __int64 __fastcall WorldOcclusionQueryRenderModule___HkProcessBatchQueries(fb::WorldOcclusionQueryRenderModule* _this, DWORD64 Qword, fb::WorldViewDesc* viewDesc, bool b )
 {
-	CustomOcclusionQueryManager::GetInstance()->EngineUpdate();
+	CustomOcclusionQueryManager::GetInstance()->EngineUpdate( _this, Qword, viewDesc );
 	return fb__WorldOcclusionQueryRenderModule__processBatchQueries( _this, Qword, viewDesc, b );
 }
 
@@ -61,7 +61,7 @@ void __fastcall CustomOcclusionQueryManager::hook()
 	bHooked = true;
 }
 
-void __fastcall CustomOcclusionQueryManager::EngineUpdate()
+void __fastcall CustomOcclusionQueryManager::EngineUpdate(fb::WorldOcclusionQueryRenderModule* _this, DWORD64 Qword, fb::WorldViewDesc* viewDesc)
 {
 	//printf("function: "__FUNCTION__"\n");
 	fb::DxRenderer* pDxRenderer = fb::DxRenderer::GetInstance();
@@ -85,19 +85,19 @@ void __fastcall CustomOcclusionQueryManager::EngineUpdate()
 	fb::WorldOcclusionQueryRenderModule* pWorldOcclusionQueryRenderModule = pWorldRenderer->m_WorldOcclusionQueriesRenderModule;
 	if (!ValidPointer(pWorldOcclusionQueryRenderModule)) return;
 	
-	fb::WorldRenderer::RootView* RootView = &pWorldRenderer->m_rootviews;
-	if (!ValidPointer(RootView)) return;
+	//fb::WorldRenderer::RootView* RootView = &pWorldRenderer->m_rootviews;
+	//if (!ValidPointer(RootView)) return;
 	
-	fb::WorldViewDesc* RootViewDesc = &RootView->m_rootView; //same as viewDesc
+	fb::WorldViewDesc* RootViewDesc = viewDesc;//&RootView->m_rootView; //same as viewDesc
 	if (!ValidPointer(RootViewDesc)) return;
 	
-	float flScreenArea = RootView->m_rootView.viewport.width * RootView->m_rootView.viewport.height;
+	float flScreenArea = RootViewDesc->viewport.width * RootViewDesc->viewport.height;
 
 	//first xref of "waitMeshStream" function one of the first instructions of the function
 	//48 8B 0D ?? ?? ?? ?? 48 8B 01 49 8B D7 FF 50 28 48 8B + 3
 	//trackDis = *(_QWORD *)(GameRenderer + 0x12458);
 
-	QWORD Qword = *(_QWORD *)( (DWORD_PTR)pGameRenderer + 0x12458); //same as qword
+	//QWORD Qword = *(_QWORD *)( (DWORD_PTR)pGameRenderer + 0x12458); //same as qword
 	if (!ValidPointer(Qword)) return;
 
 	static DWORD idMap[256];
