@@ -23,7 +23,7 @@ private:
 	CRITICAL_SECTION m_CriticalSection;
 public:
 	void __fastcall CustomOcclusionQueryManager::UpdateLocalTransform(fb::Vec4*);
-	void __fastcall CustomOcclusionQueryManager::EngineUpdate();
+	void __fastcall CustomOcclusionQueryManager::EngineUpdate(fb::WorldOcclusionQueryRenderModule* _this, DWORD64 Qword, fb::WorldViewDesc* viewDesc);
 	void __fastcall CustomOcclusionQueryManager::hook();
 	void CustomOcclusionQueryManager::InitCriticalSection();
 	void CustomOcclusionQueryManager::Enter();
